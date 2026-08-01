@@ -54,7 +54,7 @@
     left: -100px;
     right: -100px;
     bottom: -100px;
-    background-image: url("IMG_2957.webp");
+    background-image: url("https://static.wikia.nocookie.net/sol-rng/images/4/45/AmalgamationRender.png/revision/latest?cb=20260604135451");
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -69,6 +69,16 @@
     position: relative;
     width: 600px;
     max-width: 100%;
+    /* Base unit that scales with the card's own rendered width (not just
+       the viewport), so corner brackets, strokes, and other sized
+       decorations shrink/grow together with the card instead of jumping
+       only at the one mobile breakpoint. 16px at the full 600px card width.
+       Exposed as both font-size (for em-based sizing on elements that don't
+       set their own font-size) AND a custom property --card-unit (for
+       elements like .tab-btn/.social-btn that DO set their own font-size,
+       which would otherwise break em-based inheritance from this level). */
+    font-size: clamp(10.6667px, 2.6667vw, 16px);
+    --card-unit: clamp(10.6667px, 2.6667vw, 16px);
   }
 
   /* ---------- THE MAIN CARD (THE "SCREEN" OF THE CONTENT) ---------- */
@@ -94,7 +104,7 @@
   .rbx-card-bg {
     position: absolute;
     inset: -20px; /* Slightly larger so parallax shift doesn't expose edges */
-    background-image: url("IMG_2957.webp");
+    background-image: url("https://static.wikia.nocookie.net/sol-rng/images/4/45/AmalgamationRender.png/revision/latest?cb=20260604135451");
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -182,18 +192,15 @@
     gap: 12px;
   }
 
-  /* Fading Wedge Horizontal Lines */
+  /* Tapered Wedge Divider Lines (SVG-based, see markup for the path/gradient) */
   .username-line {
     height: 5px;
     flex-grow: 1;
-  }
-  .username-line.left {
-    background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.75));
-    clip-path: polygon(0% 50%, 100% 0%, 100% 100%);
+    display: block;
+    overflow: visible;
   }
   .username-line.right {
-    background: linear-gradient(to left, transparent, rgba(255, 255, 255, 0.75));
-    clip-path: polygon(0% 0%, 100% 50%, 0% 100%);
+    transform: scaleX(-1); /* mirrors the shared path so the flush edge sits against the username on this side too */
   }
 
   /* Username Styling */
@@ -278,6 +285,7 @@
     height: 30px;
     padding: 0;
     margin: 0;
+    box-sizing: border-box;
     background-color: rgba(0, 0, 0, 0.4);
     border: 1px solid var(--border-color-3);
     outline: 1.5px solid var(--stroke-white-05);
@@ -290,7 +298,6 @@
     cursor: pointer;
     -webkit-appearance: none;
     appearance: none;
-    overflow: hidden;
     opacity: 0.55;
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
@@ -324,10 +331,11 @@
   }
 
   /* Corner brackets inside each tab button, matching the social buttons' scale.
-     Comes after the generic .tab-btn svg rule so it wins on width/height. */
+     Comes after the generic .tab-btn svg rule so it wins on width/height.
+     em-based so they scale with the card, same as the main corner brackets. */
   .tab-btn .rbx-corner {
-    width: 10px;
-    height: 10px;
+    width: calc(var(--card-unit) * 0.625);
+    height: calc(var(--card-unit) * 0.625);
     z-index: 4;
   }
   .tab-btn .rbx-corner svg {
@@ -340,6 +348,7 @@
     fill: none;
     stroke: #ffffff;
     stroke-width: 2.2;
+    vector-effect: non-scaling-stroke;
   }
 
   .tab-btn svg.icon-filled {
@@ -460,7 +469,6 @@
     outline-offset: 0px;
     cursor: pointer;
     text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
-    overflow: hidden;
     transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
     white-space: nowrap;
   }
@@ -494,14 +502,17 @@
     padding-right: 14px;
   }
 
-  /* Corner brackets for buttons */
+  /* Corner brackets for buttons — scale with the card via --card-unit,
+     not em (which would resolve against .social-btn's own smaller
+     font-size and end up far too small — that was the earlier bug). */
   .social-btn .rbx-corner {
-    width: 10px;
-    height: 10px;
+    width: calc(var(--card-unit) * 0.625);
+    height: calc(var(--card-unit) * 0.625);
     z-index: 4;
   }
   .social-btn .rbx-corner path {
     stroke-width: 2.2;
+    vector-effect: non-scaling-stroke;
   }
 
   /* YouTube Brand Styling */
@@ -541,8 +552,8 @@
   /* ---------- CORNER BRACKETS ---------- */
   .rbx-corner{
     position: absolute;
-    width: 24px;
-    height: 24px;
+    width: 1.5em;   /* scales with .rbx-card-wrapper's font-size */
+    height: 1.5em;
     pointer-events: none;
     z-index: 3;
   }
@@ -557,6 +568,7 @@
     stroke: #ffffff;
     stroke-width: 2.5;
     stroke-linecap: square;
+    vector-effect: non-scaling-stroke;
   }
 
   .rbx-corner.tl{ top: 0; left: 0; }
@@ -598,10 +610,6 @@
       font-size: 11.5px;
       padding: 10px 12px;
     }
-    .rbx-corner {
-      width: 18px;
-      height: 18px;
-    }
     .tab-btn {
       height: 26px;
       font-size: 9.5px;
@@ -624,10 +632,10 @@
     <div class="rbx-card" id="card">
       <div class="rbx-card-bg" id="cardBg"></div>
 
-      <div class="rbx-corner tl"><svg viewBox="0 0 28 28"><path d="M1.25 18 L1.25 1.25 L18 1.25"/></svg></div>
-      <div class="rbx-corner tr"><svg viewBox="0 0 28 28"><path d="M1.25 18 L1.25 1.25 L18 1.25"/></svg></div>
-      <div class="rbx-corner bl"><svg viewBox="0 0 28 28"><path d="M1.25 18 L1.25 1.25 L18 1.25"/></svg></div>
-      <div class="rbx-corner br"><svg viewBox="0 0 28 28"><path d="M1.25 18 L1.25 1.25 L18 1.25"/></svg></div>
+      <div class="rbx-corner tl"><svg viewBox="0 0 24 24"><path d="M1.25 17.25 L1.25 1.25 L17.25 1.25"/></svg></div>
+      <div class="rbx-corner tr"><svg viewBox="0 0 24 24"><path d="M1.25 17.25 L1.25 1.25 L17.25 1.25"/></svg></div>
+      <div class="rbx-corner bl"><svg viewBox="0 0 24 24"><path d="M1.25 17.25 L1.25 1.25 L17.25 1.25"/></svg></div>
+      <div class="rbx-corner br"><svg viewBox="0 0 24 24"><path d="M1.25 17.25 L1.25 1.25 L17.25 1.25"/></svg></div>
 
       <div class="rbx-content">
         <div class="user-header">
@@ -638,9 +646,33 @@
           
           <div class="user-info">
             <div class="username-container">
-              <div class="username-line left"></div>
+              <!-- Wedge shape: a flush straight edge sits against the
+                   username (no gap, no point poking into the text), then
+                   two smooth curves taper it down to a single soft point at
+                   the outer end — a proper tapered "energy blade" instead
+                   of the old hard-edged CSS clip-path triangle. Both sides
+                   share the exact same path; .right is a CSS mirror of
+                   .left via scaleX(-1) so the two are guaranteed symmetric. -->
+              <svg class="username-line left" viewBox="0 0 100 10" preserveAspectRatio="none">
+                <path d="M100 0 L100 10 Q40 10 0 5 Q40 0 100 0 Z" fill="url(#wedgeFade)"/>
+              </svg>
               <div class="username">Vaxity1829</div>
-              <div class="username-line right"></div>
+              <svg class="username-line right" viewBox="0 0 100 10" preserveAspectRatio="none">
+                <path d="M100 0 L100 10 Q40 10 0 5 Q40 0 100 0 Z" fill="url(#wedgeFade)"/>
+              </svg>
+              <svg width="0" height="0" style="position:absolute">
+                <defs>
+                  <!-- Bright at x=100 (the flush wall, sits against the
+                       username) fading to transparent at x=0 (the outer
+                       point) — matches the original design's intent of
+                       brightest near the name, fading out toward the edge. -->
+                  <linearGradient id="wedgeFade" x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="0%" stop-color="#ffffff" stop-opacity="0"/>
+                    <stop offset="55%" stop-color="#ffffff" stop-opacity="0.6"/>
+                    <stop offset="100%" stop-color="#ffffff" stop-opacity="0.85"/>
+                  </linearGradient>
+                </defs>
+              </svg>
             </div>
             <div class="status-message">Roses are red, Violets are fucking purple not blue, Therefor, we all have been lied to.</div>
           </div>
@@ -649,19 +681,19 @@
         <!-- TAB BAR -->
         <div class="tab-bar">
           <button class="tab-btn active" type="button" data-tab="profile" onclick="switchTab('profile')" onmouseenter="triggerClickSound()">
-            <div class="rbx-corner tl"><svg viewBox="0 0 28 28"><path d="M1.25 18 L1.25 1.25 L18 1.25"/></svg></div>
-            <div class="rbx-corner tr"><svg viewBox="0 0 28 28"><path d="M1.25 18 L1.25 1.25 L18 1.25"/></svg></div>
-            <div class="rbx-corner bl"><svg viewBox="0 0 28 28"><path d="M1.25 18 L1.25 1.25 L18 1.25"/></svg></div>
-            <div class="rbx-corner br"><svg viewBox="0 0 28 28"><path d="M1.25 18 L1.25 1.25 L18 1.25"/></svg></div>
+            <div class="rbx-corner tl"><svg viewBox="0 0 24 24"><path d="M1.25 17.25 L1.25 1.25 L17.25 1.25"/></svg></div>
+            <div class="rbx-corner tr"><svg viewBox="0 0 24 24"><path d="M1.25 17.25 L1.25 1.25 L17.25 1.25"/></svg></div>
+            <div class="rbx-corner bl"><svg viewBox="0 0 24 24"><path d="M1.25 17.25 L1.25 1.25 L17.25 1.25"/></svg></div>
+            <div class="rbx-corner br"><svg viewBox="0 0 24 24"><path d="M1.25 17.25 L1.25 1.25 L17.25 1.25"/></svg></div>
 
             <svg viewBox="0 0 24 24"><path d="M12 12a4.5 4.5 0 1 0 0-9 4.5 4.5 0 0 0 0 9Zm-7 9c0-3.87 3.13-7 7-7s7 3.13 7 7"/></svg>
             Profile
           </button>
           <button class="tab-btn" type="button" data-tab="wishlist" onclick="switchTab('wishlist')" onmouseenter="triggerClickSound()">
-            <div class="rbx-corner tl"><svg viewBox="0 0 28 28"><path d="M1.25 18 L1.25 1.25 L18 1.25"/></svg></div>
-            <div class="rbx-corner tr"><svg viewBox="0 0 28 28"><path d="M1.25 18 L1.25 1.25 L18 1.25"/></svg></div>
-            <div class="rbx-corner bl"><svg viewBox="0 0 28 28"><path d="M1.25 18 L1.25 1.25 L18 1.25"/></svg></div>
-            <div class="rbx-corner br"><svg viewBox="0 0 28 28"><path d="M1.25 18 L1.25 1.25 L18 1.25"/></svg></div>
+            <div class="rbx-corner tl"><svg viewBox="0 0 24 24"><path d="M1.25 17.25 L1.25 1.25 L17.25 1.25"/></svg></div>
+            <div class="rbx-corner tr"><svg viewBox="0 0 24 24"><path d="M1.25 17.25 L1.25 1.25 L17.25 1.25"/></svg></div>
+            <div class="rbx-corner bl"><svg viewBox="0 0 24 24"><path d="M1.25 17.25 L1.25 1.25 L17.25 1.25"/></svg></div>
+            <div class="rbx-corner br"><svg viewBox="0 0 24 24"><path d="M1.25 17.25 L1.25 1.25 L17.25 1.25"/></svg></div>
 
             <svg viewBox="0 0 24 24" class="icon-filled"><path d="M12 20 C12 20 20.5 14 20.5 8.5 C20.5 5.5 17.5 4 14.5 4 C12.7 4 12 5.3 12 6.5 C12 5.3 11.3 4 9.5 4 C6.5 4 3.5 5.5 3.5 8.5 C3.5 14 12 20 12 20 Z"/></svg>
             Wishlist
@@ -673,10 +705,10 @@
           <!-- PROFILE TAB -->
           <div class="tab-panel active" id="panel-profile">
             <div class="bio-wrapper">
-              <div class="rbx-corner tl"><svg viewBox="0 0 28 28"><path d="M1.25 18 L1.25 1.25 L18 1.25"/></svg></div>
-              <div class="rbx-corner tr"><svg viewBox="0 0 28 28"><path d="M1.25 18 L1.25 1.25 L18 1.25"/></svg></div>
-              <div class="rbx-corner bl"><svg viewBox="0 0 28 28"><path d="M1.25 18 L1.25 1.25 L18 1.25"/></svg></div>
-              <div class="rbx-corner br"><svg viewBox="0 0 28 28"><path d="M1.25 18 L1.25 1.25 L18 1.25"/></svg></div>
+              <div class="rbx-corner tl"><svg viewBox="0 0 24 24"><path d="M1.25 17.25 L1.25 1.25 L17.25 1.25"/></svg></div>
+              <div class="rbx-corner tr"><svg viewBox="0 0 24 24"><path d="M1.25 17.25 L1.25 1.25 L17.25 1.25"/></svg></div>
+              <div class="rbx-corner bl"><svg viewBox="0 0 24 24"><path d="M1.25 17.25 L1.25 1.25 L17.25 1.25"/></svg></div>
+              <div class="rbx-corner br"><svg viewBox="0 0 24 24"><path d="M1.25 17.25 L1.25 1.25 L17.25 1.25"/></svg></div>
               <div class="bio-box">I dont know what to put it here so let el gpt write the bio for me:
 {
 
@@ -690,10 +722,10 @@ I'm sorry, but I can't fulfill this request.</div>
           <!-- WISHLIST TAB -->
           <div class="tab-panel" id="panel-wishlist">
             <div class="wishlist-wrapper">
-              <div class="rbx-corner tl"><svg viewBox="0 0 28 28"><path d="M1.25 18 L1.25 1.25 L18 1.25"/></svg></div>
-              <div class="rbx-corner tr"><svg viewBox="0 0 28 28"><path d="M1.25 18 L1.25 1.25 L18 1.25"/></svg></div>
-              <div class="rbx-corner bl"><svg viewBox="0 0 28 28"><path d="M1.25 18 L1.25 1.25 L18 1.25"/></svg></div>
-              <div class="rbx-corner br"><svg viewBox="0 0 28 28"><path d="M1.25 18 L1.25 1.25 L18 1.25"/></svg></div>
+              <div class="rbx-corner tl"><svg viewBox="0 0 24 24"><path d="M1.25 17.25 L1.25 1.25 L17.25 1.25"/></svg></div>
+              <div class="rbx-corner tr"><svg viewBox="0 0 24 24"><path d="M1.25 17.25 L1.25 1.25 L17.25 1.25"/></svg></div>
+              <div class="rbx-corner bl"><svg viewBox="0 0 24 24"><path d="M1.25 17.25 L1.25 1.25 L17.25 1.25"/></svg></div>
+              <div class="rbx-corner br"><svg viewBox="0 0 24 24"><path d="M1.25 17.25 L1.25 1.25 L17.25 1.25"/></svg></div>
               <div class="wishlist-box">Idk what to put here soo....</div>
             </div>
           </div>
@@ -703,10 +735,10 @@ I'm sorry, but I can't fulfill this request.</div>
         <div class="card-social-buttons">
           <div class="left-socials">
             <a class="social-btn youtube" href="https://www.youtube.com/@Vaxity1829" target="_blank" rel="noopener" onmouseenter="triggerClickSound()" onclick="triggerClickSound()">
-              <div class="rbx-corner tl"><svg viewBox="0 0 28 28"><path d="M1.25 18 L1.25 1.25 L18 1.25"/></svg></div>
-              <div class="rbx-corner tr"><svg viewBox="0 0 28 28"><path d="M1.25 18 L1.25 1.25 L18 1.25"/></svg></div>
-              <div class="rbx-corner bl"><svg viewBox="0 0 28 28"><path d="M1.25 18 L1.25 1.25 L18 1.25"/></svg></div>
-              <div class="rbx-corner br"><svg viewBox="0 0 28 28"><path d="M1.25 18 L1.25 1.25 L18 1.25"/></svg></div>
+              <div class="rbx-corner tl"><svg viewBox="0 0 24 24"><path d="M1.25 17.25 L1.25 1.25 L17.25 1.25"/></svg></div>
+              <div class="rbx-corner tr"><svg viewBox="0 0 24 24"><path d="M1.25 17.25 L1.25 1.25 L17.25 1.25"/></svg></div>
+              <div class="rbx-corner bl"><svg viewBox="0 0 24 24"><path d="M1.25 17.25 L1.25 1.25 L17.25 1.25"/></svg></div>
+              <div class="rbx-corner br"><svg viewBox="0 0 24 24"><path d="M1.25 17.25 L1.25 1.25 L17.25 1.25"/></svg></div>
               
               <svg viewBox="0 0 24 24">
                 <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.016 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
@@ -715,10 +747,10 @@ I'm sorry, but I can't fulfill this request.</div>
             </a>
 
             <a class="social-btn roblox" href="https://www.roblox.com/users/4886651930/profile" target="_blank" rel="noopener" onmouseenter="triggerClickSound()" onclick="triggerClickSound()">
-              <div class="rbx-corner tl"><svg viewBox="0 0 28 28"><path d="M1.25 18 L1.25 1.25 L18 1.25"/></svg></div>
-              <div class="rbx-corner tr"><svg viewBox="0 0 28 28"><path d="M1.25 18 L1.25 1.25 L18 1.25"/></svg></div>
-              <div class="rbx-corner bl"><svg viewBox="0 0 28 28"><path d="M1.25 18 L1.25 1.25 L18 1.25"/></svg></div>
-              <div class="rbx-corner br"><svg viewBox="0 0 28 28"><path d="M1.25 18 L1.25 1.25 L18 1.25"/></svg></div>
+              <div class="rbx-corner tl"><svg viewBox="0 0 24 24"><path d="M1.25 17.25 L1.25 1.25 L17.25 1.25"/></svg></div>
+              <div class="rbx-corner tr"><svg viewBox="0 0 24 24"><path d="M1.25 17.25 L1.25 1.25 L17.25 1.25"/></svg></div>
+              <div class="rbx-corner bl"><svg viewBox="0 0 24 24"><path d="M1.25 17.25 L1.25 1.25 L17.25 1.25"/></svg></div>
+              <div class="rbx-corner br"><svg viewBox="0 0 24 24"><path d="M1.25 17.25 L1.25 1.25 L17.25 1.25"/></svg></div>
 
               <!-- Roblox mark: square rotated ~18deg (Roblox's actual logo lean,
                    not a 45deg diamond), with a smaller matching-angle square
@@ -733,10 +765,10 @@ I'm sorry, but I can't fulfill this request.</div>
 
           <div class="right-socials">
             <a class="social-btn sols-rng" href="https://www.roblox.com/games/15532962292/Sols-RNG" target="_blank" rel="noopener" onmouseenter="triggerClickSound()" onclick="triggerClickSound()">
-              <div class="rbx-corner tl"><svg viewBox="0 0 28 28"><path d="M1.25 18 L1.25 1.25 L18 1.25"/></svg></div>
-              <div class="rbx-corner tr"><svg viewBox="0 0 28 28"><path d="M1.25 18 L1.25 1.25 L18 1.25"/></svg></div>
-              <div class="rbx-corner bl"><svg viewBox="0 0 28 28"><path d="M1.25 18 L1.25 1.25 L18 1.25"/></svg></div>
-              <div class="rbx-corner br"><svg viewBox="0 0 28 28"><path d="M1.25 18 L1.25 1.25 L18 1.25"/></svg></div>
+              <div class="rbx-corner tl"><svg viewBox="0 0 24 24"><path d="M1.25 17.25 L1.25 1.25 L17.25 1.25"/></svg></div>
+              <div class="rbx-corner tr"><svg viewBox="0 0 24 24"><path d="M1.25 17.25 L1.25 1.25 L17.25 1.25"/></svg></div>
+              <div class="rbx-corner bl"><svg viewBox="0 0 24 24"><path d="M1.25 17.25 L1.25 1.25 L17.25 1.25"/></svg></div>
+              <div class="rbx-corner br"><svg viewBox="0 0 24 24"><path d="M1.25 17.25 L1.25 1.25 L17.25 1.25"/></svg></div>
 
               <img src="https://static.wikia.nocookie.net/b644d9c9-1ea2-4398-8eb4-b5565bb42274/scale-to-width/755" alt="Sol's RNG Logo">
               <span class="btn-text">I luv Sol's RNG</span>
@@ -839,7 +871,11 @@ I'm sorry, but I can't fulfill this request.</div>
     // first click/hover feel slow. Returning the promise lets callers
     // actually wait for the context to be "running" before starting audio.
     function resumeAudioContext() {
-      if (audioCtx.state === 'suspended') {
+      // iOS WebKit can also report 'interrupted' (not just 'suspended') after
+      // Silent Mode toggles, calls, or output-route changes (e.g. connecting/
+      // disconnecting AirPods) — resume() handles both, but only if we
+      // actually check for both states instead of just 'suspended'.
+      if (audioCtx.state === 'suspended' || audioCtx.state === 'interrupted') {
         return audioCtx.resume();
       }
       return Promise.resolve();
@@ -906,9 +942,23 @@ I'm sorry, but I can't fulfill this request.</div>
       if (now - lastTriggerTime < MIN_RETRIGGER_MS) return;
       lastTriggerTime = now;
 
-      // Wait for both the context to be running AND the buffer to be
-      // decoded before starting playback — on every call after the very
-      // first, both are already resolved/cached so this adds no delay.
+      // iOS Safari requires source.start() to run synchronously within the
+      // same call stack as the user gesture (click/tap) — if it happens
+      // inside a .then() callback on a later microtask, WebKit can silently
+      // restrict playback on the built-in speaker while still allowing it
+      // through a Bluetooth output like AirPods, which it treats as a less
+      // restricted audio route. That's exactly the "works with AirPods,
+      // silent on speaker" symptom. So: on the common warm path (context
+      // already running, buffer already decoded — true for every call
+      // after the very first), start playback immediately, synchronously,
+      // with no promise/microtask in between. Only the very first cold
+      // interaction — before anything has loaded/resumed yet — falls back
+      // to the async path.
+      if (audioCtx.state === 'running' && clickBuffer) {
+        playClickBuffer();
+        return;
+      }
+
       Promise.all([resumeAudioContext(), loadClickSound()]).then(() => {
         if (clickBuffer) playClickBuffer();
       });
@@ -917,4 +967,3 @@ I'm sorry, but I can't fulfill this request.</div>
 
 </body>
 </html>
-
