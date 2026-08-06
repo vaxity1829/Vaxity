@@ -12,6 +12,7 @@
 
 <style>
   :root{
+    --bg-transparency-0-4: rgba(0, 0, 0, 0.65); /* BackgroundColor3 (0,0,0), BackgroundTransparency 0.4 -> alpha = 0.65 */
     --stroke-white-05: rgba(255, 255, 255, 0.5); /* UIStroke: white, Transparency 0.5 */
   }
 
@@ -104,10 +105,7 @@
     box-shadow: 0 15px 45px rgba(0, 0, 0, 0.95);
   }
 
-  /* Parallax Background Image Layer (Crisp, unblurred inside card).
-     Slight brightness reduction so it doesn't fully wash out the text/UI
-     sitting on top of it, without going as dark as the old 0.65-alpha
-     black overlay did. */
+  /* Parallax Background Image Layer (Crisp, unblurred inside card) */
   .rbx-card-bg {
     position: absolute;
     inset: -20px; /* Slightly larger so parallax shift doesn't expose edges */
@@ -115,11 +113,20 @@
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    filter: brightness(0.6);
     pointer-events: none;
     z-index: 0;
     will-change: transform;
     transition: transform 0.1s ease-out;
+  }
+
+  /* Card's own tint overlay: sits strictly over the render inside the card */
+  .rbx-card::before{
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-color: var(--bg-transparency-0-4);
+    pointer-events: none;
+    z-index: 1;
   }
 
 
