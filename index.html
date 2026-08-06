@@ -104,7 +104,10 @@
     box-shadow: 0 15px 45px rgba(0, 0, 0, 0.95);
   }
 
-  /* Parallax Background Image Layer (Crisp, unblurred inside card) */
+  /* Parallax Background Image Layer (Crisp, unblurred inside card).
+     Slight brightness reduction so it doesn't fully wash out the text/UI
+     sitting on top of it, without going as dark as the old 0.65-alpha
+     black overlay did. */
   .rbx-card-bg {
     position: absolute;
     inset: -20px; /* Slightly larger so parallax shift doesn't expose edges */
@@ -112,6 +115,7 @@
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
+    filter: brightness(0.75);
     pointer-events: none;
     z-index: 0;
     will-change: transform;
