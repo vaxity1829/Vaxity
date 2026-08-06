@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Roblox Card UI Replica</title>
+<title>Vaxity1829 - Profile</title>
+<link rel="icon" type="image/webp" href="https://cdn.discordapp.com/avatars/1496070013931749457/dc901676123b4a541d70ff50d79f76fd.webp?size=32">
 <!-- Import Sarpanch font for username, status, buttons, and bio -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -11,8 +12,6 @@
 
 <style>
   :root{
-    --bg-transparency-0-4: rgba(0, 0, 0, 0.65); /* BackgroundColor3 (0,0,0), BackgroundTransparency 0.4 -> alpha = 0.65 */
-    --border-color-3: rgb(27, 42, 53);          /* BorderColor3 */
     --stroke-white-05: rgba(255, 255, 255, 0.5); /* UIStroke: white, Transparency 0.5 */
   }
 
@@ -89,10 +88,15 @@
     box-sizing: border-box;
     overflow: hidden;
 
-    /* BorderColor3 (27,42,53) - Roblox's native 1px "Border" property */
-    border: 1px solid var(--border-color-3);
-
-    /* UIStroke, AppliedStrokeMode = Outer, Thickness 1.5, white, Transparency 0.5 */
+    /* UIStroke, AppliedStrokeMode = Outer, Thickness 1.5, white, Transparency 0.5.
+       outline-offset: 0 keeps the outline flush with the card's own
+       border-box edge — the same edge the corner brackets sit at (top:0/
+       left:0/etc). The brackets can't be shifted outward to meet a
+       further-out outline (the fix used on .tab-btn/.social-btn) because
+       overflow:hidden here is load-bearing — it clips the oversized
+       parallax background layer — so this has to work the other way:
+       the outline stays put at the true edge instead of being pushed
+       inward or outward past it. */
     outline: 1.5px solid var(--stroke-white-05);
     outline-offset: 0px;
 
@@ -114,15 +118,6 @@
     transition: transform 0.1s ease-out;
   }
 
-  /* Card's own tint overlay: sits strictly over the render inside the card */
-  .rbx-card::before{
-    content: "";
-    position: absolute;
-    inset: 0;
-    background-color: var(--bg-transparency-0-4);
-    pointer-events: none;
-    z-index: 1;
-  }
 
   /* ---------- CARD CONTENT ---------- */
   .rbx-content {
@@ -233,7 +228,14 @@
     flex-grow: 1;
     display: flex;
     flex-direction: column;
-    border: 1px solid var(--border-color-3);
+    /* Plain outline at offset:0, same as .tab-btn — the bracket divs sit
+       at top:0/left:0 (no negative offset), which is the same edge the
+       outline naturally draws outward from. This is the pattern already
+       confirmed stable on the tab buttons; the earlier box-shadow +
+       negative-offset version was still showing a visible gap on some
+       devices (real mismatch between two independently-positioned
+       elements, not just a rounding quirk), so this avoids that entirely
+       by not needing an offset calculation at all. */
     outline: 1.5px solid var(--stroke-white-05);
     outline-offset: 0px;
     background-color: rgba(0, 0, 0, 0.4); /* Translucent background (0.4 opacity) */
@@ -287,7 +289,11 @@
     margin: 0;
     box-sizing: border-box;
     background-color: rgba(0, 0, 0, 0.4);
-    border: 1px solid var(--border-color-3);
+    /* appearance:none removes native button chrome, but browsers still
+       apply their own default border (e.g. Chrome's 2px outset UA style)
+       unless it's explicitly zeroed — this was invisible before because
+       the dark border color override was masking it. */
+    border: none;
     outline: 1.5px solid var(--stroke-white-05);
     outline-offset: 0px;
     color: rgba(255, 255, 255, 0.6);
@@ -334,8 +340,8 @@
      Comes after the generic .tab-btn svg rule so it wins on width/height.
      em-based so they scale with the card, same as the main corner brackets. */
   .tab-btn .rbx-corner {
-    width: calc(var(--card-unit) * 0.625);
-    height: calc(var(--card-unit) * 0.625);
+    width: calc(var(--card-unit) * 0.4375);
+    height: calc(var(--card-unit) * 0.4375);
     z-index: 4;
   }
   .tab-btn .rbx-corner svg {
@@ -347,9 +353,10 @@
   .tab-btn .rbx-corner path {
     fill: none;
     stroke: #ffffff;
-    stroke-width: 2.2;
+    stroke-width: 1.5;
     stroke-linejoin: miter;
     stroke-linecap: square;
+    stroke-miterlimit: 4;
     vector-effect: non-scaling-stroke;
   }
 
@@ -401,7 +408,8 @@
     flex-grow: 1;
     display: flex;
     flex-direction: column;
-    border: 1px solid var(--border-color-3);
+    /* Plain outline at offset:0, same as .bio-wrapper/.tab-btn — see
+       .bio-wrapper for why this replaced the box-shadow + offset version. */
     outline: 1.5px solid var(--stroke-white-05);
     outline-offset: 0px;
     background-color: rgba(0, 0, 0, 0.4);
@@ -466,7 +474,6 @@
     letter-spacing: 0.8px;
     color: #ffffff;
     box-sizing: border-box;
-    border: 1px solid var(--border-color-3);
     outline: 1.5px solid var(--stroke-white-05);
     outline-offset: 0px;
     cursor: pointer;
@@ -508,21 +515,21 @@
      not em (which would resolve against .social-btn's own smaller
      font-size and end up far too small — that was the earlier bug). */
   .social-btn .rbx-corner {
-    width: calc(var(--card-unit) * 0.625);
-    height: calc(var(--card-unit) * 0.625);
+    width: calc(var(--card-unit) * 0.4375);
+    height: calc(var(--card-unit) * 0.4375);
     z-index: 4;
   }
   .social-btn .rbx-corner path {
-    stroke-width: 2.2;
+    stroke-width: 1.5;
     stroke-linejoin: miter;
     stroke-linecap: square;
+    stroke-miterlimit: 4;
     vector-effect: non-scaling-stroke;
   }
 
   /* YouTube Brand Styling */
   .social-btn.youtube {
     background: linear-gradient(135deg, rgba(255, 0, 0, 0.65), rgba(160, 0, 0, 0.45));
-    border-color: rgba(255, 0, 0, 0.5);
   }
   .social-btn.youtube:hover {
     background: linear-gradient(135deg, rgba(255, 0, 0, 0.85), rgba(200, 0, 0, 0.65));
@@ -541,7 +548,6 @@
   /* Sol's RNG Brand Styling */
   .social-btn.sols-rng {
     background: linear-gradient(135deg, rgba(234, 179, 8, 0.6), rgba(6, 182, 212, 0.4));
-    border-color: rgba(234, 179, 8, 0.6);
   }
   .social-btn.sols-rng:hover {
     background: linear-gradient(135deg, rgba(234, 179, 8, 0.85), rgba(6, 182, 212, 0.7));
@@ -572,6 +578,7 @@
     stroke-width: 2.5;
     stroke-linejoin: miter;
     stroke-linecap: square;
+    stroke-miterlimit: 4;
     vector-effect: non-scaling-stroke;
   }
 
