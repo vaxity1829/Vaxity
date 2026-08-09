@@ -8,7 +8,7 @@
 <!-- Import Sarpanch font for username, status, buttons, and bio -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Sarpanch:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Sarpanch:wght@400;500;600;700;800&family=Press+Start+2P&display=swap" rel="stylesheet">
 
 <style>
   :root{
@@ -189,24 +189,24 @@
     min-width: 0;
   }
 
-  /* Username Wrapper to align text & fading lines */
+  /* Username Wrapper to align text & flanking symbols */
   .username-container {
     display: flex;
     align-items: center;
     justify-content: center;
     width: 100%;
-    gap: 12px;
+    gap: 10px;
   }
 
-  /* Tapered Wedge Divider Lines (SVG-based, see markup for the path/gradient) */
-  .username-line {
-    height: 5px;
-    flex-grow: 1;
-    display: block;
-    overflow: visible;
-  }
-  .username-line.right {
-    transform: scaleX(-1); /* mirrors the shared path so the flush edge sits against the username on this side too */
+  /* Symbol decorations flanking the username (✧ ◈ ◂ / ▸ ◈ ✧) */
+  .username-deco {
+    font-family: 'Sarpanch', sans-serif;
+    font-size: 13px;
+    letter-spacing: 4px;
+    color: rgba(255, 255, 255, 0.75);
+    text-shadow: 0 0 8px rgba(255, 255, 255, 0.35);
+    white-space: nowrap;
+    flex-shrink: 0;
   }
 
   /* Username Styling */
@@ -218,6 +218,14 @@
     text-shadow: 0 0 10px rgba(255, 255, 255, 0.4);
     white-space: nowrap;
     text-align: center;
+  }
+
+  /* Pixel/Minecraft-style font for the name itself, inside .username */
+  .username-pixel {
+    font-family: 'Press Start 2P', 'Sarpanch', sans-serif;
+    font-size: 15px;
+    letter-spacing: 0px;
+    vertical-align: middle;
   }
 
   /* Status Message Styling */
@@ -633,6 +641,13 @@
     .username {
       font-size: 16px;
     }
+    .username-pixel {
+      font-size: 11px;
+    }
+    .username-deco {
+      font-size: 10px;
+      letter-spacing: 2px;
+    }
     .status-message {
       font-size: 9.5px;
     }
@@ -676,33 +691,9 @@
           
           <div class="user-info">
             <div class="username-container">
-              <!-- Wedge shape: a flush straight edge sits against the
-                   username (no gap, no point poking into the text), then
-                   two smooth curves taper it down to a single soft point at
-                   the outer end — a proper tapered "energy blade" instead
-                   of the old hard-edged CSS clip-path triangle. Both sides
-                   share the exact same path; .right is a CSS mirror of
-                   .left via scaleX(-1) so the two are guaranteed symmetric. -->
-              <svg class="username-line left" viewBox="0 0 100 10" preserveAspectRatio="none">
-                <path d="M100 0 L100 10 Q40 10 0 5 Q40 0 100 0 Z" fill="url(#wedgeFade)"/>
-              </svg>
-              <div class="username">Vaxity1829</div>
-              <svg class="username-line right" viewBox="0 0 100 10" preserveAspectRatio="none">
-                <path d="M100 0 L100 10 Q40 10 0 5 Q40 0 100 0 Z" fill="url(#wedgeFade)"/>
-              </svg>
-              <svg width="0" height="0" style="position:absolute">
-                <defs>
-                  <!-- Bright at x=100 (the flush wall, sits against the
-                       username) fading to transparent at x=0 (the outer
-                       point) — matches the original design's intent of
-                       brightest near the name, fading out toward the edge. -->
-                  <linearGradient id="wedgeFade" x1="0" y1="0" x2="1" y2="0">
-                    <stop offset="0%" stop-color="#ffffff" stop-opacity="0"/>
-                    <stop offset="55%" stop-color="#ffffff" stop-opacity="0.6"/>
-                    <stop offset="100%" stop-color="#ffffff" stop-opacity="0.85"/>
-                  </linearGradient>
-                </defs>
-              </svg>
+              <span class="username-deco">✧ ◈ ◂</span>
+              <div class="username"><span class="username-pixel">Vaxity</span></div>
+              <span class="username-deco">▸ ◈ ✧</span>
             </div>
             <div class="status-message">Roses are red, Violets are fucking purple not blue, Therefor, we all have been lied to.</div>
           </div>
