@@ -8,7 +8,19 @@
 <!-- Import Sarpanch font for username, status, buttons, and bio -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Sarpanch:wght@400;500;600;700;800&family=Press+Start+2P&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Sarpanch:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<!-- Minecraft-style webfont (IdreesInc/Minecraft-Font, a fan recreation of the
+     in-game typeface) for the username, self-hosted via jsDelivr's GitHub CDN
+     for reliability instead of a third-party font-CSS host. -->
+<style>
+  @font-face {
+    font-family: 'Minecraft';
+    src: url('https://cdn.jsdelivr.net/gh/IdreesInc/Minecraft-Font@main/Minecraft.otf') format('opentype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+  }
+</style>
 
 <style>
   :root{
@@ -189,22 +201,26 @@
     min-width: 0;
   }
 
-  /* Username Wrapper to align text & flanking symbols */
+  /* Username Wrapper to align text & flanking symbols.
+     Shifted left by the avatar's width + gap so it lands in the true
+     middle of the card instead of the middle of the remaining space next
+     to the avatar — scoped to just this row so .status-message below it
+     is unaffected and stays centered in its own space. */
   .username-container {
     display: flex;
     align-items: center;
     justify-content: center;
     width: 100%;
     gap: 10px;
+    margin-left: calc(-1 * (72px + 16px));
   }
 
   /* Symbol decorations flanking the username (✧ ◈ ◂ / ▸ ◈ ✧) */
   .username-deco {
     font-family: 'Sarpanch', sans-serif;
-    font-size: 13px;
+    font-size: 30px;
     letter-spacing: 4px;
-    color: rgba(255, 255, 255, 0.75);
-    text-shadow: 0 0 8px rgba(255, 255, 255, 0.35);
+    color: #ffffff;
     white-space: nowrap;
     flex-shrink: 0;
   }
@@ -215,17 +231,31 @@
     font-weight: 700;
     font-size: 22px;
     letter-spacing: 1px;
-    text-shadow: 0 0 10px rgba(255, 255, 255, 0.4);
     white-space: nowrap;
     text-align: center;
   }
 
-  /* Pixel/Minecraft-style font for the name itself, inside .username */
+  /* Minecraft-style font for the name itself, inside .username */
   .username-pixel {
-    font-family: 'Press Start 2P', 'Sarpanch', sans-serif;
-    font-size: 15px;
+    font-family: 'Minecraft', 'Sarpanch', sans-serif;
+    font-size: 20px;
     letter-spacing: 0px;
+    text-align: center;
     vertical-align: middle;
+    color: #ffffff;
+    position: relative;
+    left: 4px;
+  }
+
+  /* @ symbol at the start of the username, nudged up to correct its
+     vertical offset against the rest of the name text next to it. */
+  .username-at {
+    font-size: 1em;
+    display: inline-block;
+    vertical-align: middle;
+    line-height: 1;
+    position: relative;
+    top: -5px;
   }
 
   /* Status Message Styling */
@@ -638,14 +668,17 @@
       width: 80px;
       height: 80px;
     }
+    .username-container {
+      margin-left: calc(-1 * (58px + 10px));
+    }
     .username {
       font-size: 16px;
     }
     .username-pixel {
-      font-size: 11px;
+      font-size: 14px;
     }
     .username-deco {
-      font-size: 10px;
+      font-size: 22px;
       letter-spacing: 2px;
     }
     .status-message {
@@ -691,9 +724,7 @@
           
           <div class="user-info">
             <div class="username-container">
-              <span class="username-deco">✧ ◈ ◂</span>
-              <div class="username"><span class="username-pixel">Vaxity</span></div>
-              <span class="username-deco">▸ ◈ ✧</span>
+              <div class="username"><span class="username-pixel"><span class="username-at">@</span>Vaxity1829</span></div>
             </div>
             <div class="status-message">Roses are red, Violets are fucking purple not blue, Therefor, we all have been lied to.</div>
           </div>
