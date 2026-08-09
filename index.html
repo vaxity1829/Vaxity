@@ -347,6 +347,14 @@
     flex-shrink: 0;
   }
 
+  /* Tab icon styling for PNG replacements (Main.png / WishList.png) */
+  .tab-btn .tab-icon-img {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+    flex-shrink: 0;
+  }
+
   /* Corner brackets inside each tab button, matching the social buttons' scale.
      Comes after the generic .tab-btn svg rule so it wins on width/height.
      em-based so they scale with the card, same as the main corner brackets. */
@@ -708,7 +716,7 @@
             <div class="rbx-corner bl"><svg viewBox="0 0 24 24"><path d="M1.25 17.25 L1.25 1.25 L17.25 1.25"/></svg></div>
             <div class="rbx-corner br"><svg viewBox="0 0 24 24"><path d="M1.25 17.25 L1.25 1.25 L17.25 1.25"/></svg></div>
 
-            <svg viewBox="0 0 24 24"><path d="M12 12a4.5 4.5 0 1 0 0-9 4.5 4.5 0 0 0 0 9Zm-7 9c0-3.87 3.13-7 7-7s7 3.13 7 7"/></svg>
+            <img src="Main.png" alt="Profile" class="tab-icon-img">
             Profile
           </button>
           <button class="tab-btn" type="button" data-tab="wishlist" onclick="switchTab('wishlist')" onmouseenter="triggerClickSound()">
@@ -717,7 +725,7 @@
             <div class="rbx-corner bl"><svg viewBox="0 0 24 24"><path d="M1.25 17.25 L1.25 1.25 L17.25 1.25"/></svg></div>
             <div class="rbx-corner br"><svg viewBox="0 0 24 24"><path d="M1.25 17.25 L1.25 1.25 L17.25 1.25"/></svg></div>
 
-            <svg viewBox="0 0 24 24" class="icon-filled"><path d="M12 20 C12 20 20.5 14 20.5 8.5 C20.5 5.5 17.5 4 14.5 4 C12.7 4 12 5.3 12 6.5 C12 5.3 11.3 4 9.5 4 C6.5 4 3.5 5.5 3.5 8.5 C3.5 14 12 20 12 20 Z"/></svg>
+            <img src="WishList.png" alt="Wishlist" class="tab-icon-img">
             Wishlist
           </button>
         </div>
