@@ -143,6 +143,89 @@
     color: #ffffff;
   }
 
+  /* Sol's RNG decoration mirrored exactly opposite the avatar — same
+     24px inset from the card edge that .avatar-img sits at (top-left),
+     just mirrored to top-right, so it isn't clipped into the literal
+     corner. Same footprint as the profile picture (72px, matching
+     .avatar-img), tilted slightly for a pinned/sticker look. Sits above
+     the tint overlay but below the corner brackets. The button wrapper
+     carries the position/size/rotation/interaction so the whole tilted
+     icon is clickable and straightens out + grows on hover. */
+  .sols-rng-corner-link {
+    position: absolute;
+    top: 24px;
+    right: 24px;
+    width: 72px;
+    height: 72px;
+    padding: 0;
+    margin: 0;
+    display: block;
+    z-index: 4;
+    background: none;
+    border: none;
+    -webkit-appearance: none;
+    appearance: none;
+    -webkit-tap-highlight-color: transparent;
+    transform: rotate(14deg);
+    transform-origin: center;
+    cursor: pointer;
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .sols-rng-corner-link:hover {
+    transform: rotate(0deg) scale(1.12);
+  }
+  .sols-rng-corner-link:active {
+    transform: rotate(0deg) scale(1.04);
+  }
+
+  .sols-rng-corner-icon {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+    filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.6));
+  }
+
+  /* ---------- SOL'S RNG BOUNCING SPRITES ---------- */
+  /* Fixed to the true viewport so sprites can bounce across the whole
+     screen regardless of the card's own overflow:hidden. z-index above
+     everything else on the page (menu was previously the highest at
+     100) so sprites always render on top. The layer itself passes
+     clicks through to the page underneath — only the sprites inside it
+     would need pointer-events re-enabled, and they don't need to be
+     clickable for this feature. */
+  .sols-sprite-layer {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    pointer-events: none;
+    overflow: hidden;
+  }
+
+  /* Each sprite is positioned via transform:translate() (not top/left)
+     so the physics loop can move it every animation frame without
+     triggering layout — just compositing. */
+  .sols-sprite {
+    position: absolute;
+    top: 0;
+    left: 0;
+    object-fit: contain;
+    will-change: transform;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.6));
+    opacity: 1;
+    transition: opacity 0.32s ease, filter 0.32s ease;
+  }
+
+  /* Added by despawnSolsSprite() one frame before the sprite's final
+     transform (frozen position/rotation + scale(0)) is set — this class
+     only supplies transition timing, so once that transform lands, the
+     browser animates smoothly into it from wherever the sprite last
+     was, shrinking in place instead of jumping. */
+  .sols-sprite-despawn {
+    opacity: 0;
+    transition: transform 0.32s cubic-bezier(0.34, 1.56, 0.56, 1), opacity 0.24s ease 0.08s;
+  }
+
   .user-header {
     display: flex;
     align-items: center;
@@ -235,18 +318,16 @@
     color: #ffffff;
   }
 
-  /* @ symbol at the start of the username, nudged up to correct its
-     vertical offset against the rest of the name text next to it. */
-  .username-at {
-    font-size: 1em;
-    display: inline-block;
-    vertical-align: middle;
-    line-height: 1;
-    position: relative;
-    top: -5px;
-  }
-
-  /* Status Message Styling */
+  /* Status Message Styling.
+     .user-info (this element's parent) only spans the space left over
+     after the avatar + gap, so naive full-width centering here would
+     either mis-center against the actual card, or (if corrected to span
+     the true full width) let long text wrap back out underneath the
+     avatar. Instead, reserve a matching empty zone on the right equal to
+     the avatar's own footprint (72px + 16px gap) so the usable text area
+     is symmetric and safely clear of the avatar on both sides, then
+     center within that — this keeps the text visually centered on the
+     card while guaranteeing it can never reach back under the avatar. */
   .status-message {
     font-family: 'Sarpanch', sans-serif;
     font-weight: 500;
@@ -256,7 +337,9 @@
     text-align: center;
     line-height: 1.3;
     opacity: 0.9;
-    padding: 0 4px;
+    box-sizing: border-box;
+    width: 100%;
+    padding: 0 calc(72px + 16px) 0 4px;
   }
 
   /* Bio Wrapper - Inner box sitting inside the main card frame */
@@ -403,11 +486,6 @@
     stroke-linecap: square;
     stroke-miterlimit: 4;
     vector-effect: non-scaling-stroke;
-  }
-
-  .tab-btn svg.icon-filled {
-    fill: currentColor;
-    stroke: none;
   }
 
   .tab-btn:hover {
@@ -641,6 +719,374 @@
   .rbx-corner.bl{ bottom: 0; left: 0; transform: scaleY(-1); }
   .rbx-corner.br{ bottom: 0; right: 0; transform: scale(-1, -1); }
 
+  /* ---------- MENU BUTTON (TOP-LEFT CORNER OF THE PAGE) ---------- */
+  .menu-wrap {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 100;
+  }
+
+  /* Square icon button, themed the same as .bio-wrapper (dark translucent
+     background, matching outline) with its own corner brackets, same
+     pattern as .rbx-corner elsewhere on the card. */
+  .menu-btn {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+    font-size: 16px; /* fixed base for the .rbx-corner em-sizing below, since this button lives outside .rbx-card-wrapper's fluid clamp() scaling */
+    background-color: var(--bg-transparency-0-4);
+    /* appearance:none removes native button chrome, but browsers still
+       apply their own default border (e.g. Chrome's 2px outset UA style)
+       on top unless it's explicitly zeroed — same fix as .tab-btn. */
+    border: none;
+    outline: 1.5px solid var(--stroke-white-05);
+    outline-offset: 0px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .menu-btn:active {
+    transform: scale(0.96);
+  }
+
+  /* White click-flash overlay, instant on/off — no fade in either
+     direction, matching the .tab-btn pattern. Driven by JS pointer
+     events (see .pressed below) rather than CSS :hover/:active, since
+     those can carry browser-default timing that looks like a fade even
+     without an explicit transition. */
+  .menu-btn::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    background-color: #ffffff;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .menu-btn.pressed::after {
+    opacity: 0.35;
+  }
+
+  /* Corner brackets on the menu button and panel, matching the same
+     scale/stroke pattern as .tab-btn/.social-btn's corner brackets
+     (0.4375 ratio, 1.5 stroke-width) rather than the much larger main
+     card corners' defaults, which were far too chunky at this size. */
+  .menu-btn .rbx-corner,
+  .menu-panel .rbx-corner {
+    width: calc(1em * 0.4375);
+    height: calc(1em * 0.4375);
+  }
+  .menu-btn .rbx-corner path,
+  .menu-panel .rbx-corner path {
+    stroke-width: 1.5;
+  }
+
+  .menu-btn img {
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+  }
+
+  /* Text fallback (☰) shown only if the 3Lines icon fails to load */
+  .menu-btn .menu-fallback-icon {
+    display: none;
+    font-size: 22px;
+    line-height: 1;
+    color: #ffffff;
+  }
+  .menu-btn img.icon-failed {
+    display: none;
+  }
+  .menu-btn img.icon-failed + .menu-fallback-icon {
+    display: block;
+  }
+
+  /* Dropdown panel — themed the same as .bio-wrapper (dark translucent
+     background + matching outline + corner brackets), sized smaller,
+     expanding downward from the button. Fixed-positioned so it's never
+     clipped by the card. */
+  .menu-panel {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    width: 190px;
+    font-size: 16px; /* fixed base for .rbx-corner em-sizing, same reasoning as .menu-btn */
+    background-color: var(--bg-transparency-0-4);
+    outline: 1.5px solid var(--stroke-white-05);
+    outline-offset: 0px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.85);
+    padding: 10px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+
+    /* Collapsed by default */
+    opacity: 0;
+    transform: translateY(-6px);
+    pointer-events: none;
+    transition: opacity 0.25s ease, transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .menu-wrap.open .menu-panel {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+
+  .menu-panel-item {
+    position: relative;
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    margin: 0;
+    background-color: rgba(0, 0, 0, 0.35);
+    border: none;
+    outline: 1.5px solid var(--stroke-white-05);
+    outline-offset: 0px;
+    color: #ffffff;
+    text-decoration: none;
+    font-family: 'Sarpanch', sans-serif;
+    font-weight: 600;
+    font-size: 11px;
+    letter-spacing: 0.6px;
+    text-align: left;
+    padding: 8px 10px;
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+    -webkit-tap-highlight-color: transparent;
+    overflow: hidden;
+  }
+
+  /* Same instant white click-flash pattern as .menu-btn/.tab-btn. */
+  .menu-panel-item::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background-color: #ffffff;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .menu-panel-item.pressed::after {
+    opacity: 0.35;
+  }
+
+  /* ---------- DISCORD SPOILER TOOL MODAL ---------- */
+  .spoiler-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    box-sizing: border-box;
+    background-color: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+  }
+  .spoiler-modal-overlay.open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .spoiler-modal {
+    position: relative;
+    width: 100%;
+    max-width: 380px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-sizing: border-box;
+    background-color: var(--bg-transparency-0-4);
+    outline: 1.5px solid var(--stroke-white-05);
+    outline-offset: 0px;
+    box-shadow: 0 20px 45px rgba(0, 0, 0, 0.85);
+    padding: 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    font-size: 16px; /* fixed base for .rbx-corner em-sizing, same reasoning as .menu-btn */
+    transform: scale(0.94) translateY(6px);
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .spoiler-modal-overlay.open .spoiler-modal {
+    transform: scale(1) translateY(0);
+  }
+
+  .spoiler-modal .rbx-corner {
+    width: calc(1em * 0.6);
+    height: calc(1em * 0.6);
+  }
+  .spoiler-modal .rbx-corner path {
+    stroke-width: 1.5;
+  }
+
+  .spoiler-modal-close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 26px;
+    height: 26px;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(0, 0, 0, 0.35);
+    border: none;
+    outline: 1.5px solid var(--stroke-white-05);
+    outline-offset: 0px;
+    color: #ffffff;
+    line-height: 1;
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+    -webkit-tap-highlight-color: transparent;
+    transition: background-color 0.2s ease;
+  }
+  .spoiler-modal-close svg {
+    width: 12px;
+    height: 12px;
+    display: block;
+  }
+  .spoiler-modal-close:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+  }
+
+  .spoiler-modal-header {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding-right: 20px;
+  }
+  .spoiler-modal-title {
+    font-family: 'Sarpanch', sans-serif;
+    font-weight: 700;
+    font-size: 18px;
+    color: #ffffff;
+    letter-spacing: 0.5px;
+  }
+  .spoiler-modal-subtitle {
+    font-family: 'Sarpanch', sans-serif;
+    font-weight: 500;
+    font-size: 10.5px;
+    color: #cbd5e1;
+    line-height: 1.4;
+    opacity: 0.9;
+  }
+
+  .spoiler-modal-label {
+    font-family: 'Sarpanch', sans-serif;
+    font-weight: 600;
+    font-size: 10.5px;
+    letter-spacing: 0.5px;
+    color: #cbd5e1;
+    text-transform: uppercase;
+  }
+
+  .spoiler-modal-textarea {
+    width: 100%;
+    box-sizing: border-box;
+    resize: vertical;
+    background-color: rgba(0, 0, 0, 0.35);
+    outline: 1.5px solid var(--stroke-white-05);
+    outline-offset: 0px;
+    border: none;
+    color: #ffffff;
+    font-family: 'Sarpanch', sans-serif;
+    font-size: 12px;
+    padding: 8px 10px;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  .spoiler-modal-textarea::placeholder {
+    color: rgba(255, 255, 255, 0.4);
+  }
+  .spoiler-modal-textarea:focus {
+    outline: 1.5px solid rgba(255, 255, 255, 0.9);
+  }
+  .spoiler-modal-textarea[readonly] {
+    color: #cbd5e1;
+  }
+
+  /* Platform selector — two side-by-side toggle buttons, same dark/
+     outline theme as the rest of the modal. Active platform gets a
+     lighter fill so it reads clearly against the inactive one. */
+  .spoiler-modal-platform-row {
+    display: flex;
+    gap: 6px;
+  }
+  .spoiler-platform-btn {
+    flex: 1;
+    box-sizing: border-box;
+    background-color: rgba(0, 0, 0, 0.35);
+    border: none;
+    outline: 1.5px solid var(--stroke-white-05);
+    outline-offset: 0px;
+    color: #cbd5e1;
+    font-family: 'Sarpanch', sans-serif;
+    font-weight: 600;
+    font-size: 11px;
+    letter-spacing: 0.5px;
+    padding: 7px 6px;
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+    -webkit-tap-highlight-color: transparent;
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+  .spoiler-platform-btn.active {
+    background-color: rgba(255, 255, 255, 0.16);
+    color: #ffffff;
+    outline: 1.5px solid rgba(255, 255, 255, 0.8);
+  }
+  .spoiler-platform-btn:not(.active):hover {
+    background-color: rgba(255, 255, 255, 0.08);
+  }
+
+  .spoiler-modal-checkbox-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-family: 'Sarpanch', sans-serif;
+    font-weight: 500;
+    font-size: 10.5px;
+    color: #cbd5e1;
+    line-height: 1.4;
+    cursor: pointer;
+  }
+  .spoiler-modal-checkbox-row input[type="checkbox"] {
+    flex-shrink: 0;
+    margin-top: 2px;
+    width: 14px;
+    height: 14px;
+    accent-color: #ffffff;
+    cursor: pointer;
+  }
+
+  .spoiler-modal-actions {
+    display: flex;
+    margin-top: 4px;
+  }
+  .spoiler-modal-copy-btn {
+    text-align: center;
+    font-size: 12px;
+    padding: 10px;
+  }
+
   /* ---------- MOBILE ADAPTIVE SCALING ---------- */
   @media (max-width: 640px) {
     .rbx-card {
@@ -679,6 +1125,7 @@
     }
     .status-message {
       font-size: 9.5px;
+      margin-left: calc(-1 * (58px + 10px));
     }
     .bio-box {
       font-size: 11.5px;
@@ -702,6 +1149,31 @@
   <!-- Full-bleed background layer positioned far outside bounds to prevent edge blur artifacts -->
   <div class="bg-backdrop"></div>
 
+  <!-- CORNER MENU BUTTON — fixed to the page's top-left corner (not the
+       card), themed like the bio card: translucent dark background,
+       matching outline, and the same open-corner-bracket decoration. -->
+  <div class="menu-wrap" id="menuWrap">
+    <button class="menu-btn" type="button" id="menuBtn" onclick="toggleMenu()" onmouseenter="triggerClickSound()" aria-label="Menu">
+      <div class="rbx-corner tl"><svg viewBox="0 0 24 24"><path d="M1.25 17.25 L1.25 1.25 L17.25 1.25"/></svg></div>
+      <div class="rbx-corner tr"><svg viewBox="0 0 24 24"><path d="M1.25 17.25 L1.25 1.25 L17.25 1.25"/></svg></div>
+      <div class="rbx-corner bl"><svg viewBox="0 0 24 24"><path d="M1.25 17.25 L1.25 1.25 L17.25 1.25"/></svg></div>
+      <div class="rbx-corner br"><svg viewBox="0 0 24 24"><path d="M1.25 17.25 L1.25 1.25 L17.25 1.25"/></svg></div>
+
+      <img src="3Lines" alt="Menu" onerror="this.classList.add('icon-failed')">
+      <span class="menu-fallback-icon">&#9776;</span>
+    </button>
+    <div class="menu-panel" id="menuPanel">
+      <div class="rbx-corner tl"><svg viewBox="0 0 24 24"><path d="M1.25 17.25 L1.25 1.25 L17.25 1.25"/></svg></div>
+      <div class="rbx-corner tr"><svg viewBox="0 0 24 24"><path d="M1.25 17.25 L1.25 1.25 L17.25 1.25"/></svg></div>
+      <div class="rbx-corner bl"><svg viewBox="0 0 24 24"><path d="M1.25 17.25 L1.25 1.25 L17.25 1.25"/></svg></div>
+      <div class="rbx-corner br"><svg viewBox="0 0 24 24"><path d="M1.25 17.25 L1.25 1.25 L17.25 1.25"/></svg></div>
+
+      <button class="menu-panel-item" type="button" onmouseenter="triggerClickSound()" onclick="triggerClickSound(); openSpoilerTool()">Spoiler Text Tool</button>
+      <button class="menu-panel-item" type="button" onmouseenter="triggerClickSound()" onclick="triggerClickSound(); clearAllSolsSprites()">Clear Sprites</button>
+      <a class="menu-panel-item" href="https://www.roblox.com/games/15532962292/Sols-RNG" target="_blank" rel="noopener" onmouseenter="triggerClickSound()" onclick="triggerClickSound()">Play Sol's RNG</a>
+    </div>
+  </div>
+
   <div class="rbx-card-wrapper">
     <div class="rbx-card" id="card">
       <div class="rbx-card-bg" id="cardBg"></div>
@@ -710,6 +1182,15 @@
       <div class="rbx-corner tr"><svg viewBox="0 0 24 24"><path d="M1.25 17.25 L1.25 1.25 L17.25 1.25"/></svg></div>
       <div class="rbx-corner bl"><svg viewBox="0 0 24 24"><path d="M1.25 17.25 L1.25 1.25 L17.25 1.25"/></svg></div>
       <div class="rbx-corner br"><svg viewBox="0 0 24 24"><path d="M1.25 17.25 L1.25 1.25 L17.25 1.25"/></svg></div>
+
+      <!-- Sol's RNG decoration, mirrored exactly opposite the avatar,
+           same footprint as the profile picture, tilted slightly.
+           Clicking it spawns a small bouncing physics sprite of this
+           icon at a random point on screen (see #solsSpriteLayer and
+           the physics loop below) instead of navigating anywhere. -->
+      <button type="button" class="sols-rng-corner-link" id="solsCornerBtn" onclick="spawnSolsSprite()" onmouseenter="triggerClickSound()" aria-label="Sol's RNG">
+        <img class="sols-rng-corner-icon" src="https://static.wikia.nocookie.net/sol-rng/images/6/62/Sols-RNG-Logo.png/revision/latest/scale-to-width-down/250?cb=20260414013116" alt="Sol's RNG">
+      </button>
 
       <div class="rbx-content">
         <div class="user-header">
@@ -834,7 +1315,7 @@ I'm sorry, but I can't fulfill this request.</div>
               <div class="rbx-corner bl"><svg viewBox="0 0 24 24"><path d="M1.25 17.25 L1.25 1.25 L17.25 1.25"/></svg></div>
               <div class="rbx-corner br"><svg viewBox="0 0 24 24"><path d="M1.25 17.25 L1.25 1.25 L17.25 1.25"/></svg></div>
 
-              <img src="https://static.wikia.nocookie.net/b644d9c9-1ea2-4398-8eb4-b5565bb42274/scale-to-width/755" alt="Sol's RNG Logo">
+              <img src="https://static.wikia.nocookie.net/sol-rng/images/6/62/Sols-RNG-Logo.png/revision/latest/scale-to-width-down/250?cb=20260414013116" alt="Sol's RNG Logo">
               <span class="btn-text">I luv Sol's RNG</span>
             </a>
           </div>
@@ -844,7 +1325,573 @@ I'm sorry, but I can't fulfill this request.</div>
     </div>
   </div>
 
+  <!-- Sol's RNG bouncing sprite layer. Fixed to the true viewport (not
+       the card), sits above absolutely everything else on the page, and
+       is itself non-interactive — individual sprites re-enable pointer
+       events on themselves only if needed later. Sprites are appended
+       here by spawnSolsSprite() and simulated by the physics loop. -->
+  <div class="sols-sprite-layer" id="solsSpriteLayer"></div>
+
+  <!-- Multi-Platform Spoiler Tool modal — wraps each character of the
+       input in the target platform's spoiler markup (Discord's
+       ||text||, or Reddit's >!text!<), so pasting the output into that
+       platform forces the reader to reveal it one piece at a time.
+       Opened from the corner menu; themed the same as the rest of the
+       card (dark translucent panel, white outline, corner brackets,
+       Sarpanch font). -->
+  <div class="spoiler-modal-overlay" id="spoilerModalOverlay" onclick="closeSpoilerToolOnOverlay(event)">
+    <div class="spoiler-modal">
+      <div class="rbx-corner tl"><svg viewBox="0 0 24 24"><path d="M1.25 17.25 L1.25 1.25 L17.25 1.25"/></svg></div>
+      <div class="rbx-corner tr"><svg viewBox="0 0 24 24"><path d="M1.25 17.25 L1.25 1.25 L17.25 1.25"/></svg></div>
+      <div class="rbx-corner bl"><svg viewBox="0 0 24 24"><path d="M1.25 17.25 L1.25 1.25 L17.25 1.25"/></svg></div>
+      <div class="rbx-corner br"><svg viewBox="0 0 24 24"><path d="M1.25 17.25 L1.25 1.25 L17.25 1.25"/></svg></div>
+
+      <button type="button" class="spoiler-modal-close" onclick="closeSpoilerTool()" onmouseenter="triggerClickSound()" aria-label="Close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M4 4 L20 20 M20 4 L4 20"/></svg>
+      </button>
+
+      <div class="spoiler-modal-header">
+        <span class="spoiler-modal-title">Spoiler Text Tool</span>
+        <span class="spoiler-modal-subtitle" id="spoilerSubtitle">Wraps your message in ||spoilers|| so Discord forces it to be revealed piece by piece</span>
+      </div>
+
+      <div class="spoiler-modal-label">Platform</div>
+      <div class="spoiler-modal-platform-row">
+        <button type="button" class="spoiler-platform-btn active" id="spoilerPlatformDiscord" onclick="setSpoilerPlatform('discord')" onmouseenter="triggerClickSound()">Discord</button>
+        <button type="button" class="spoiler-platform-btn" id="spoilerPlatformReddit" onclick="setSpoilerPlatform('reddit')" onmouseenter="triggerClickSound()">Reddit</button>
+      </div>
+
+      <label class="spoiler-modal-label" for="spoilerInput">Your message</label>
+      <textarea id="spoilerInput" class="spoiler-modal-textarea" rows="4" placeholder="Type something..." oninput="convertSpoilerText()"></textarea>
+
+      <label class="spoiler-modal-checkbox-row" for="spoilerForceSpaces">
+        <input type="checkbox" id="spoilerForceSpaces" onchange="convertSpoilerText()" checked>
+        <span>Spoiler the spaces too (forces one reveal per character, not per word)</span>
+      </label>
+
+      <label class="spoiler-modal-label" for="spoilerOutput" id="spoilerOutputLabel">Spoiler output — paste this into Discord</label>
+      <textarea id="spoilerOutput" class="spoiler-modal-textarea" rows="4" readonly></textarea>
+
+      <div class="spoiler-modal-actions">
+        <button type="button" class="menu-panel-item spoiler-modal-copy-btn" onclick="copySpoilerOutput(this)" onmouseenter="triggerClickSound()">Copy Spoiler Text</button>
+      </div>
+    </div>
+  </div>
+
   <script>
+    // ---------- SOL'S RNG BOUNCING SPRITES ----------
+    // Clicking the corner icon spawns a small copy of it at a random
+    // point on screen (never inside the main card), then a single
+    // physics loop simulates gravity, floor/wall/card-edge bounce,
+    // sprite-vs-sprite collision, and rolling rotation for every sprite
+    // that currently exists — they stack up across clicks and all keep
+    // bouncing/colliding together. If the device has a usable gyroscope,
+    // tilting it steers which way gravity pulls instead of sprites ever
+    // going stale; otherwise a sprite that's been still for a few
+    // seconds shrinks away and despawns.
+    const solsSpriteLayer = document.getElementById('solsSpriteLayer');
+    const solsCardWrapper = document.querySelector('.rbx-card-wrapper');
+    const SOLS_SPRITE_SIZE = 44;       // bigger, but still small enough to stack cleanly
+    const SOLS_GRAVITY = 0.45;         // px/frame^2
+    const SOLS_BOUNCE_DAMPING = 0.62;  // energy kept after a floor/wall/card bounce
+    const SOLS_SPRITE_RESTITUTION = 0.75; // energy kept after sprite-vs-sprite collision
+    const SOLS_SPIN_FACTOR = 3.2;      // deg of spin per 1px of horizontal motion (rolling-ball feel)
+    const SOLS_STILL_SPEED = 0.15;     // px/frame below which a sprite counts as "at rest"
+    const SOLS_DESPAWN_AFTER_MS = 3000; // how long a sprite must stay at rest before despawning (no-gyro mode only)
+    const SOLS_DESPAWN_ANIM_MS = 320;   // shrink/pop-out duration before actual removal
+
+    const solsSprites = []; // { el, x, y, vx, vy, r, rot, stillSince, despawning }
+    let solsGyroActive = false;
+    let solsGyroGX = 0; // gravity direction unit vector, x
+    let solsGyroGY = 1; // gravity direction unit vector, y (defaults to straight down)
+    let solsGyroRequested = false;
+
+    // Live rect of the card, refreshed each physics frame so it tracks
+    // the card's own fluid clamp()-based resizing without a resize
+    // listener. Sprites treat this as a solid rectangle: they can't
+    // spawn inside it and bounce off whichever edge they hit.
+    function getSolsCardRect() {
+      const r = solsCardWrapper.getBoundingClientRect();
+      return { left: r.left, top: r.top, right: r.right, bottom: r.bottom };
+    }
+
+    function pointInRect(x, y, rect) {
+      return x > rect.left && x < rect.right && y > rect.top && y < rect.bottom;
+    }
+
+    function spawnSolsSprite() {
+      const r = SOLS_SPRITE_SIZE / 2;
+      const cardRect = getSolsCardRect();
+      const maxX = Math.max(window.innerWidth - SOLS_SPRITE_SIZE, 0);
+      const maxY = Math.max(window.innerHeight - SOLS_SPRITE_SIZE, 0);
+
+      // Re-roll a random spawn point until it lands outside the card's
+      // rect (padded slightly by the sprite's own size so it doesn't
+      // spawn edge-touching either). Capped so a pathological viewport
+      // (card covering nearly the whole screen) can't loop forever.
+      let x, y, attempts = 0;
+      do {
+        x = Math.random() * maxX;
+        y = Math.random() * maxY;
+        attempts++;
+      } while (
+        attempts < 40 &&
+        pointInRect(x - r, y - r, {
+          left: cardRect.left - SOLS_SPRITE_SIZE,
+          top: cardRect.top - SOLS_SPRITE_SIZE,
+          right: cardRect.right + SOLS_SPRITE_SIZE,
+          bottom: cardRect.bottom + SOLS_SPRITE_SIZE,
+        })
+      );
+
+      const el = document.createElement('img');
+      el.src = 'https://static.wikia.nocookie.net/sol-rng/images/6/62/Sols-RNG-Logo.png/revision/latest/scale-to-width-down/250?cb=20260414013116';
+      el.alt = "Sol's RNG";
+      el.className = 'sols-sprite';
+      el.style.width = SOLS_SPRITE_SIZE + 'px';
+      el.style.height = SOLS_SPRITE_SIZE + 'px';
+      solsSpriteLayer.appendChild(el);
+
+      solsSprites.push({
+        el,
+        x,
+        y,
+        // small random initial velocity so a stack of sprites spawned
+        // in quick succession doesn't all fall in a perfectly straight
+        // line on top of each other
+        vx: (Math.random() - 0.5) * 4,
+        vy: (Math.random() - 0.5) * 2,
+        r,
+        rot: Math.random() * 360,
+        stillSince: null,
+        despawning: false,
+        resting: false, // true once settled on a floor/card surface — see stepSolsPhysics
+      });
+
+      // First click is a real user gesture — exactly when gyroscope
+      // permission (iOS) or feature detection (everywhere else) needs
+      // to happen. Only attempted once; if it fails/is denied, sprites
+      // just fall back to the stillness despawn timer.
+      if (!solsGyroRequested) {
+        solsGyroRequested = true;
+        initSolsGyro();
+      }
+    }
+
+    function initSolsGyro() {
+      const hasOrientation = typeof DeviceOrientationEvent !== 'undefined';
+      if (!hasOrientation) return; // no gyroscope API at all -> despawn-timer fallback
+
+      const attach = () => {
+        window.addEventListener('deviceorientation', onSolsOrientation);
+      };
+
+      // iOS 13+ requires an explicit permission prompt, and it must be
+      // triggered from a user gesture — spawnSolsSprite() calling this
+      // synchronously from an onclick handler satisfies that.
+      if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+        DeviceOrientationEvent.requestPermission()
+          .then((state) => {
+            if (state === 'granted') attach();
+            // denied -> solsGyroActive stays false, despawn timer keeps sprites from piling up forever
+          })
+          .catch(() => {});
+      } else {
+        // Android / desktop / browsers that don't gate this behind permission
+        attach();
+      }
+    }
+
+    function onSolsOrientation(e) {
+      // beta: front-back tilt (-180..180), gamma: left-right tilt (-90..90).
+      // Null values mean the browser fired the event but has no real
+      // sensor data (some desktop browsers do this) — treat as inactive
+      // so sprites keep using the despawn-timer fallback instead of
+      // silently freezing with zero gravity.
+      if (e.beta === null || e.gamma === null) return;
+
+      solsGyroActive = true;
+      const bx = Math.max(-45, Math.min(45, e.gamma)) / 45; // left/right tilt -> x
+      const by = Math.max(-45, Math.min(45, e.beta)) / 45;  // front/back tilt -> y
+      const len = Math.sqrt(bx * bx + by * by) || 1;
+      // Normalize so total gravity magnitude stays constant (SOLS_GRAVITY)
+      // regardless of tilt angle — only the direction changes.
+      solsGyroGX = len > 1 ? bx / len : bx;
+      solsGyroGY = len > 1 ? by / len : by;
+    }
+
+    function despawnSolsSprite(s) {
+      if (s.despawning) return;
+      s.despawning = true;
+
+      // Add the transition-bearing class FIRST, on its own frame, so
+      // the browser registers "this element now transitions transform/
+      // opacity" before the target values change below — otherwise
+      // setting the class and the final transform in the same tick can
+      // collapse into one instant jump with nothing to animate between.
+      s.el.classList.add('sols-sprite-despawn');
+      requestAnimationFrame(() => {
+        // Freeze at the current position/rotation, then shrink to 0 in
+        // place — one inline transform (matching what the physics loop
+        // was already writing each frame) so this animates smoothly
+        // FROM wherever the sprite last was, not from (0,0).
+        s.el.style.transform = `translate(${s.x}px, ${s.y}px) rotate(${s.rot}deg) scale(0)`;
+      });
+
+      setTimeout(() => {
+        const idx = solsSprites.indexOf(s);
+        if (idx !== -1) solsSprites.splice(idx, 1);
+        s.el.remove();
+      }, SOLS_DESPAWN_ANIM_MS);
+    }
+
+    // Menu item action — despawns every currently-bouncing sprite at
+    // once (each with its own shrink-out animation, same as the
+    // stillness-triggered despawn) rather than just deleting them
+    // instantly. Copies the array first since despawnSolsSprite()
+    // mutates solsSprites as each one finishes animating out.
+    function clearAllSolsSprites() {
+      [...solsSprites].forEach((s) => despawnSolsSprite(s));
+    }
+
+    // Shared clipboard-copy helper (used by the spoiler tool below) —
+    // falls back to a manual textarea+execCommand copy for browsers/
+    // contexts where navigator.clipboard isn't available (e.g. non-HTTPS
+    // local file:// pages some browsers restrict it on).
+    function copyTextToClipboard(text, onSuccess) {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(onSuccess).catch(() => {
+          fallbackCopy(text, onSuccess);
+        });
+      } else {
+        fallbackCopy(text, onSuccess);
+      }
+    }
+
+    function fallbackCopy(text, onSuccess) {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      try {
+        document.execCommand('copy');
+        onSuccess();
+      } catch (err) {
+        // Silently no-op — clipboard access just isn't available here
+      }
+      document.body.removeChild(ta);
+    }
+
+    // ---------- MULTI-PLATFORM SPOILER TOOL ----------
+    // Wraps each character of the input in the selected platform's
+    // spoiler markup (Discord's ||text||, Reddit's >!text!<) — or
+    // leaves plain spaces between spoilered chunks when "spoiler the
+    // spaces too" is unchecked — so pasting the result into that
+    // platform forces the reader to click/tap to reveal it piece by
+    // piece.
+    const spoilerOverlay = document.getElementById('spoilerModalOverlay');
+    const spoilerInput = document.getElementById('spoilerInput');
+    const spoilerOutput = document.getElementById('spoilerOutput');
+    const spoilerForceSpaces = document.getElementById('spoilerForceSpaces');
+    const spoilerSubtitle = document.getElementById('spoilerSubtitle');
+    const spoilerOutputLabel = document.getElementById('spoilerOutputLabel');
+    const spoilerPlatformBtns = {
+      discord: document.getElementById('spoilerPlatformDiscord'),
+      reddit: document.getElementById('spoilerPlatformReddit'),
+    };
+
+    const SPOILER_PLATFORMS = {
+      discord: {
+        label: 'Discord',
+        subtitle: 'Wraps your message in ||spoilers|| so Discord forces it to be revealed piece by piece',
+        wrap: (chunk) => '||' + chunk + '||',
+      },
+      reddit: {
+        label: 'Reddit',
+        subtitle: 'Wraps your message in >!spoilers!< so Reddit forces it to be revealed piece by piece',
+        wrap: (chunk) => '>!' + chunk + '!<',
+      },
+    };
+
+    let spoilerPlatform = 'discord';
+
+    function setSpoilerPlatform(platform) {
+      spoilerPlatform = platform;
+      Object.entries(spoilerPlatformBtns).forEach(([key, btn]) => {
+        btn.classList.toggle('active', key === platform);
+      });
+      spoilerSubtitle.textContent = SPOILER_PLATFORMS[platform].subtitle;
+      spoilerOutputLabel.textContent = `Spoiler output — paste this into ${SPOILER_PLATFORMS[platform].label}`;
+      convertSpoilerText();
+    }
+
+    function openSpoilerTool() {
+      spoilerOverlay.classList.add('open');
+      convertSpoilerText();
+      // Focus the input once the open transition has started, so mobile
+      // keyboards don't pop up before the modal has visibly appeared.
+      setTimeout(() => spoilerInput.focus(), 50);
+    }
+
+    function closeSpoilerTool() {
+      spoilerOverlay.classList.remove('open');
+    }
+
+    // Clicking the dark backdrop closes the modal; clicking inside the
+    // modal card itself should not (that's normal modal-overlay
+    // behavior) — checked by only closing when the click target IS the
+    // overlay element, not something nested inside it.
+    function closeSpoilerToolOnOverlay(e) {
+      if (e.target === spoilerOverlay) closeSpoilerTool();
+    }
+
+    function convertSpoilerText() {
+      const input = spoilerInput.value;
+      const forceSpaces = spoilerForceSpaces.checked;
+      const wrap = SPOILER_PLATFORMS[spoilerPlatform].wrap;
+      let result = '';
+
+      for (const char of input) {
+        if (char === ' ') {
+          result += forceSpaces ? wrap(' ') : ' ';
+        } else if (char === '\n') {
+          result += '\n';
+        } else {
+          result += wrap(char);
+        }
+      }
+
+      spoilerOutput.value = result;
+    }
+
+    function copySpoilerOutput(btn) {
+      if (!spoilerOutput.value) return;
+      const original = btn.textContent;
+      copyTextToClipboard(spoilerOutput.value, () => {
+        btn.textContent = 'Copied!';
+        setTimeout(() => {
+          btn.textContent = original;
+        }, 1200);
+      });
+    }
+
+    function stepSolsPhysics() {
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      const cardRect = getSolsCardRect();
+      const now = performance.now();
+
+      // Gravity direction: straight down by default, or steered by
+      // device tilt once the gyroscope is active.
+      const gx = solsGyroActive ? solsGyroGX * SOLS_GRAVITY : 0;
+      const gy = solsGyroActive ? solsGyroGY * SOLS_GRAVITY : SOLS_GRAVITY;
+
+      // Integrate gravity + motion, then resolve floor/wall and
+      // card-edge collisions for each sprite independently first.
+      for (const s of solsSprites) {
+        if (s.despawning) continue;
+
+        // A resting sprite (settled on a surface with zero velocity —
+        // see the floor/card-top branches below) skips gravity
+        // entirely, EXCEPT while the gyroscope is active: tilt changes
+        // are exactly what should be able to nudge it back into motion,
+        // so gyro mode always integrates normally rather than ever
+        // treating "resting" as a terminal state.
+        if (solsGyroActive || !s.resting) {
+          s.vx += gx;
+          s.vy += gy;
+          s.resting = false;
+        }
+        s.x += s.vx;
+        s.y += s.vy;
+        s.rot += s.vx * SOLS_SPIN_FACTOR; // rolling-ball spin, tied to horizontal speed
+
+        const minX = 0;
+        const maxX = w - s.r * 2;
+        const minY = 0;
+        const maxY = h - s.r * 2;
+
+        if (s.x < minX) {
+          s.x = minX;
+          s.vx = -s.vx * SOLS_BOUNCE_DAMPING;
+        } else if (s.x > maxX) {
+          s.x = maxX;
+          s.vx = -s.vx * SOLS_BOUNCE_DAMPING;
+        }
+
+        if (s.y < minY) {
+          s.y = minY;
+          s.vy = -s.vy * SOLS_BOUNCE_DAMPING;
+        } else if (s.y > maxY) {
+          s.y = maxY;
+          s.vy = -s.vy * SOLS_BOUNCE_DAMPING;
+          // Once the bounce has lost enough energy, kill the residual
+          // outright and mark the sprite as resting, instead of letting
+          // gravity/bounce chase a fraction-of-a-pixel oscillation
+          // forever — safe here since we know the sprite is genuinely
+          // against the floor with gravity pushing it into that surface
+          // (not just momentarily slow mid-air).
+          if (Math.abs(s.vy) < 1.2) {
+            s.vy = 0;
+            s.vx = 0;
+            s.resting = true;
+          }
+        }
+
+        // Card collision: treat the card as a solid rect. Only resolve
+        // if the sprite's center is actually overlapping the (padded)
+        // rect, then push out + reflect velocity along whichever axis
+        // had the smaller penetration (same idea as a standard AABB
+        // circle-vs-rect resolve).
+        const cx = s.x + s.r;
+        const cy = s.y + s.r;
+        if (
+          cx + s.r > cardRect.left &&
+          cx - s.r < cardRect.right &&
+          cy + s.r > cardRect.top &&
+          cy - s.r < cardRect.bottom
+        ) {
+          const overlapLeft = (cx + s.r) - cardRect.left;
+          const overlapRight = cardRect.right - (cx - s.r);
+          const overlapTop = (cy + s.r) - cardRect.top;
+          const overlapBottom = cardRect.bottom - (cy - s.r);
+          const minOverlap = Math.min(overlapLeft, overlapRight, overlapTop, overlapBottom);
+
+          if (minOverlap === overlapLeft) {
+            s.x = cardRect.left - s.r * 2;
+            s.vx = -s.vx * SOLS_BOUNCE_DAMPING;
+          } else if (minOverlap === overlapRight) {
+            s.x = cardRect.right;
+            s.vx = -s.vx * SOLS_BOUNCE_DAMPING;
+          } else if (minOverlap === overlapTop) {
+            s.y = cardRect.top - s.r * 2;
+            s.vy = -s.vy * SOLS_BOUNCE_DAMPING;
+            // Same rest-settling as the floor case above — the sprite
+            // is sitting on top of the card with gravity holding it
+            // there, so it's safe to kill residual bounce energy and
+            // mark it resting here.
+            if (Math.abs(s.vy) < 1.2) {
+              s.vy = 0;
+              s.vx = 0;
+              s.resting = true;
+            }
+          } else {
+            s.y = cardRect.bottom;
+            s.vy = -s.vy * SOLS_BOUNCE_DAMPING;
+          }
+        }
+      }
+
+      // Sprite-vs-sprite collision — simple pairwise circle check with
+      // positional separation + velocity exchange along the collision
+      // normal, run once per pair per frame.
+      for (let i = 0; i < solsSprites.length; i++) {
+        const a = solsSprites[i];
+        if (a.despawning) continue;
+        for (let j = i + 1; j < solsSprites.length; j++) {
+          const b = solsSprites[j];
+          if (b.despawning) continue;
+          const dx = (b.x + b.r) - (a.x + a.r);
+          const dy = (b.y + b.r) - (a.y + a.r);
+          const dist = Math.sqrt(dx * dx + dy * dy) || 0.0001;
+          const minDist = a.r + b.r;
+
+          if (dist < minDist) {
+            const overlap = (minDist - dist) / 2;
+            const nx = dx / dist;
+            const ny = dy / dist;
+
+            // Push both sprites apart so they don't sink into each other
+            a.x -= nx * overlap;
+            a.y -= ny * overlap;
+            b.x += nx * overlap;
+            b.y += ny * overlap;
+
+            // A collision disturbs both sprites — if either was resting,
+            // it's no longer settled, so gravity should resume applying
+            // to it next frame instead of staying skipped.
+            a.resting = false;
+            b.resting = false;
+
+            // Exchange velocity along the collision normal (simplified
+            // equal-mass elastic-ish collision), damped slightly so
+            // stacks settle instead of bouncing forever.
+            const avn = a.vx * nx + a.vy * ny;
+            const bvn = b.vx * nx + b.vy * ny;
+            const exchange = (bvn - avn) * SOLS_SPRITE_RESTITUTION;
+
+            a.vx += nx * exchange;
+            a.vy += ny * exchange;
+            b.vx -= nx * exchange;
+            b.vy -= ny * exchange;
+          }
+        }
+      }
+
+      // Stillness tracking + despawn — only while gyroscope isn't
+      // active, since tilt-steered gravity means "at rest" is a
+      // meaningful, temporary state (the next tilt gets it moving
+      // again), not staleness to clean up.
+      for (const s of solsSprites) {
+        if (s.despawning) continue;
+
+        if (!solsGyroActive) {
+          const speed = Math.abs(s.vx) + Math.abs(s.vy);
+          if (speed < SOLS_STILL_SPEED) {
+            if (s.stillSince === null) s.stillSince = now;
+            else if (now - s.stillSince > SOLS_DESPAWN_AFTER_MS) {
+              despawnSolsSprite(s);
+              continue;
+            }
+          } else {
+            s.stillSince = null;
+          }
+        } else {
+          s.stillSince = null;
+        }
+      }
+
+      // Write positions to the DOM once per frame, after all physics
+      // for every sprite has been resolved.
+      for (const s of solsSprites) {
+        if (s.despawning) continue;
+        s.el.style.transform = `translate(${s.x}px, ${s.y}px) rotate(${s.rot}deg)`;
+      }
+
+      requestAnimationFrame(stepSolsPhysics);
+    }
+    requestAnimationFrame(stepSolsPhysics);
+
+    // ---------- CORNER MENU (3 LINES) ----------
+    const menuWrap = document.getElementById('menuWrap');
+    const menuBtn = document.getElementById('menuBtn');
+    const menuPanelItems = document.querySelectorAll('.menu-panel-item');
+
+    function toggleMenu() {
+      menuWrap.classList.toggle('open');
+    }
+
+    // Close when clicking anywhere outside the button/panel
+    document.addEventListener('pointerdown', (e) => {
+      if (!menuWrap.contains(e.target)) {
+        menuWrap.classList.remove('open');
+      }
+    });
+
+    // Instant white click-flash for the menu button and its panel items,
+    // same pointer-event-driven pattern as .tab-btn (see below) — avoids
+    // any browser-default :hover/:active timing that could look like a fade.
+    [menuBtn, ...menuPanelItems].forEach((btn) => {
+      const press = () => btn.classList.add('pressed');
+      const release = () => btn.classList.remove('pressed');
+      btn.addEventListener('pointerdown', press);
+      btn.addEventListener('pointerup', release);
+      btn.addEventListener('pointercancel', release);
+      btn.addEventListener('pointerleave', release);
+    });
+
     // ---------- TAB SWITCHING ----------
     const tabButtons = document.querySelectorAll('.tab-btn');
     const tabPanels = document.querySelectorAll('.tab-panel');
