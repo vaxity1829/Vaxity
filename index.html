@@ -1,0 +1,336 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="favicon.ico" sizes="48x48">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="site.webmanifest">
+<title>Vaxity1829</title>
+<meta name="description" content="Vaxity1829 on TikTok: @vaxity1829">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&family=Noto+Sans+Math&family=Noto+Sans+Symbols+2&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+<style>
+/* Layout concept: a plain document in one narrow column. Discord-style font, one heading, small gray section labels, a left rule on the bio, hairline dividers. A hamburger menu switches themes; "Random ahh" drops every element under gravity. */
+:root {
+  --bg: #ffffff;
+  --fg: #1a1a1a;
+  --muted: #6b6b6b;
+  --line: #dddddd;
+  --link: #0b5cad;
+  --g1: #0b5cad;
+  --g2: #3f8ae0;
+  --font: 'gg sans', 'Noto Sans', 'Helvetica Neue', Helvetica, Arial, 'Noto Sans Symbols 2', 'Noto Sans Math', sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e0e0f;
+    --fg: #ececea;
+    --muted: #9b9b98;
+    --line: #2b2b2d;
+    --link: #e4e4e1;
+    --g1: #f6f6f4;
+    --g2: #9a9a97;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e0e0f;
+  --fg: #ececea;
+  --muted: #9b9b98;
+  --line: #2b2b2d;
+  --link: #e4e4e1;
+  --g1: #f6f6f4;
+  --g2: #9a9a97;
+  color-scheme: dark;
+}
+:root[data-theme="midnight"] {
+  --bg: #0b1020;
+  --fg: #dfe6f5;
+  --muted: #8e9ab5;
+  --line: #232c47;
+  --link: #7fb2ff;
+  --g1: #a5c8ff;
+  --g2: #5f8fe8;
+  color-scheme: dark;
+}
+:root[data-theme="sand"] {
+  --bg: #f1e9d8;
+  --fg: #2b2418;
+  --muted: #7a6d58;
+  --line: #d9cdb4;
+  --link: #8a4b12;
+  --g1: #8a4b12;
+  --g2: #c07a2e;
+  color-scheme: light;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font);
+  font-size: 17px;
+  line-height: 1.6;
+  padding-block: 56px 48px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+
+main { max-width: 34rem; margin: 0 auto; }
+
+a { color: var(--link); text-underline-offset: 3px; }
+a:focus-visible { outline: 2px solid var(--link); outline-offset: 3px; }
+
+header { display: flex; flex-wrap: wrap; align-items: center; gap: 16px 20px; }
+header img { display: block; width: 88px; height: 88px; max-width: 100%; border: 1px solid var(--line); border-radius: 0; }
+header div { min-width: 0; }
+h1 {
+  margin: 0;
+  font-size: 1.5rem;
+  line-height: 1.15;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+  color: var(--fg);
+}
+.sub { margin: 2px 0 0; color: var(--muted); }
+
+hr { border: 0; border-top: 1px solid var(--line); margin: 32px 0; }
+
+h2 { margin: 0 0 10px; font-size: 0.8rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+
+.bio { margin: 0; padding-left: 16px; border-left: 3px solid var(--line); }
+.bio p { margin: 0; overflow-wrap: anywhere; }
+
+ul { margin: 0; padding-left: 1.2em; }
+
+/* gravity mode: every page element becomes a falling body */
+.fall { position: fixed; left: 0; top: 0; margin: 0; z-index: 5; transform-origin: 50% 50%; will-change: transform; user-select: none; list-style-position: inside; }
+
+/* theme menu */
+.menu-btn {
+  position: fixed;
+  top: calc(env(safe-area-inset-top, 0px) + 12px);
+  right: max(12px, env(safe-area-inset-right, 0px));
+  z-index: 20;
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-content: center;
+  gap: 5px;
+  padding: 0;
+  background: var(--bg);
+  color: var(--fg);
+  border: 1px solid var(--line);
+  border-radius: 0;
+  cursor: pointer;
+}
+.menu-btn span { display: block; width: 20px; height: 2px; background: currentColor; }
+.menu-btn:hover, .opt:hover { background: var(--line); }
+.menu-btn:focus-visible, .opt:focus-visible { outline: 2px solid var(--link); outline-offset: 2px; }
+.panel {
+  position: fixed;
+  top: calc(env(safe-area-inset-top, 0px) + 62px);
+  right: max(12px, env(safe-area-inset-right, 0px));
+  z-index: 20;
+  width: min(240px, calc(100vw - 24px));
+  padding: 8px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+}
+.panel h3 { margin: 4px 8px 6px; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+.opt { display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 10px 8px; background: none; color: var(--fg); border: 0; font: inherit; text-align: left; cursor: pointer; }
+.opt .tick { visibility: hidden; }
+.opt[aria-checked="true"] .tick { visibility: visible; }
+</style>
+
+</head>
+<body>
+<button class="menu-btn" id="menu-btn" type="button" aria-label="Open menu" aria-haspopup="true" aria-expanded="false" aria-controls="theme-menu"><span></span><span></span><span></span></button>
+<div class="panel" id="theme-menu" role="menu" aria-label="Theme" hidden>
+  <h3>Theme</h3>
+  <button class="opt" type="button" role="menuitemradio" aria-checked="true" data-theme-choice="auto">Auto <span class="tick" aria-hidden="true">&#10003;</span></button>
+  <button class="opt" type="button" role="menuitemradio" aria-checked="false" data-theme-choice="light">Light <span class="tick" aria-hidden="true">&#10003;</span></button>
+  <button class="opt" type="button" role="menuitemradio" aria-checked="false" data-theme-choice="dark">Dark <span class="tick" aria-hidden="true">&#10003;</span></button>
+  <button class="opt" type="button" role="menuitemradio" aria-checked="false" data-theme-choice="midnight">Midnight <span class="tick" aria-hidden="true">&#10003;</span></button>
+  <button class="opt" type="button" role="menuitemradio" aria-checked="false" data-theme-choice="sand">Sand <span class="tick" aria-hidden="true">&#10003;</span></button>
+  <button class="opt" type="button" role="menuitemradio" aria-checked="false" data-theme-choice="random">Random ahh <span class="tick" aria-hidden="true">&#10003;</span></button>
+</div>
+
+<main>
+
+  <header>
+    <img src="vaxi.png" width="88" height="88" alt="Vaxity 1829 logo in white lettering on a black and white checkerboard">
+    <div>
+      <h1>•  ⌜ ⟡  Vaxity ✦ 1828  ⟡ ⌟  •</h1>
+      <p class="sub">TikTok @vaxity1829</p>
+    </div>
+  </header>
+
+  <hr>
+
+  <section aria-labelledby="bio-h">
+    <h2 id="bio-h">Bio</h2>
+    <blockquote class="bio">
+      <p>
+        I dont know what to put here so let el gpt write the bio for me:<br>
+        {<br>
+        This_content_may_violate_our_usage_policies.<br>
+        }<br>
+        I'm sorry, but I can't help.
+      </p>
+    </blockquote>
+  </section>
+
+  <hr>
+
+  <section aria-labelledby="links-h">
+    <h2 id="links-h">Links</h2>
+    <ul>
+      <li><a href="https://www.tiktok.com/@vaxity1829" target="_blank" rel="noopener">TikTok: @vaxity1829</a></li>
+    </ul>
+  </section>
+
+</main>
+
+<script>
+(function () {
+  var root = document.documentElement;
+  var KEY = 'vaxity-theme';
+  var valid = ['auto', 'light', 'dark', 'midnight', 'sand'];
+  var btn = document.getElementById('menu-btn');
+  var panel = document.getElementById('theme-menu');
+  var opts = panel.querySelectorAll('.opt');
+
+  /* ---------- gravity ("Random ahh") ---------- */
+  var SEL = 'header img, h1, .sub, hr, h2, .bio, main li';
+  var engine = null, raf = 0, last = 0, items = [], walls = null;
+
+  function placeWalls() {
+    var W = window.innerWidth, H = window.innerHeight;
+    window.Matter.Body.setPosition(walls.ground, { x: W / 2, y: H + 50 });
+    window.Matter.Body.setPosition(walls.left, { x: -50, y: H / 2 - 5000 });
+    window.Matter.Body.setPosition(walls.right, { x: W + 50, y: H / 2 - 5000 });
+  }
+
+  function render() {
+    for (var i = 0; i < items.length; i++) {
+      var it = items[i], p = it.body.position;
+      it.el.style.transform = 'translate(' + (p.x - it.w / 2).toFixed(1) + 'px,' + (p.y - it.h / 2).toFixed(1) + 'px) rotate(' + it.body.angle.toFixed(4) + 'rad)';
+    }
+  }
+
+  function tick(t) {
+    if (!engine) return;
+    var dt = last ? Math.min(t - last, 32) : 16;
+    last = t;
+    window.Matter.Engine.update(engine, dt);
+    render();
+    raf = requestAnimationFrame(tick);
+  }
+
+  function startGravity() {
+    if (!window.Matter) return;
+    stopGravity();
+    var M = window.Matter;
+    window.scrollTo(0, 0);
+    var W = window.innerWidth, H = window.innerHeight;
+    var els = document.querySelectorAll(SEL);
+    var rects = [], i;
+    for (i = 0; i < els.length; i++) { rects.push(els[i].getBoundingClientRect()); }
+
+    engine = M.Engine.create({ enableSleeping: true });
+    engine.gravity.y = 1;
+    walls = {
+      ground: M.Bodies.rectangle(W / 2, H + 50, 20000, 100, { isStatic: true }),
+      left: M.Bodies.rectangle(-50, H / 2 - 5000, 100, 20000, { isStatic: true }),
+      right: M.Bodies.rectangle(W + 50, H / 2 - 5000, 100, 20000, { isStatic: true })
+    };
+    var all = [walls.ground, walls.left, walls.right];
+
+    for (i = 0; i < els.length; i++) {
+      var el = els[i], r = rects[i];
+      var w = r.width, h = r.height;
+      var cx = Math.min(Math.max(r.left + w / 2, w / 2), W - w / 2);
+      var cy = r.top + h / 2;
+      if (r.bottom > H - 4) { cy = -h / 2 - 40 - i * 36; }
+      var body = M.Bodies.rectangle(cx, cy, w, Math.max(h, 6), { restitution: 0.25, friction: 0.5, frictionAir: 0.008 });
+      M.Body.setAngularVelocity(body, (Math.random() - 0.5) * 0.04);
+      items.push({ el: el, body: body, w: w, h: h, saved: el.getAttribute('style') });
+      all.push(body);
+    }
+    for (i = 0; i < items.length; i++) {
+      items[i].el.style.width = items[i].w + 'px';
+      items[i].el.style.height = items[i].h + 'px';
+      items[i].el.classList.add('fall');
+    }
+    M.Composite.add(engine.world, all);
+    root.style.overflow = 'hidden';
+    render();
+    raf = requestAnimationFrame(tick);
+  }
+
+  function stopGravity() {
+    if (raf) { cancelAnimationFrame(raf); raf = 0; }
+    last = 0;
+    for (var i = 0; i < items.length; i++) {
+      var it = items[i];
+      it.el.classList.remove('fall');
+      if (it.saved === null) { it.el.removeAttribute('style'); } else { it.el.setAttribute('style', it.saved); }
+    }
+    items = [];
+    if (engine && window.Matter) { window.Matter.Composite.clear(engine.world, false); window.Matter.Engine.clear(engine); }
+    engine = null;
+    walls = null;
+    root.style.removeProperty('overflow');
+  }
+
+  window.addEventListener('resize', function () { if (engine && walls) { placeWalls(); } });
+
+  /* ---------- themes ---------- */
+  function setChecked(t) {
+    for (var i = 0; i < opts.length; i++) {
+      opts[i].setAttribute('aria-checked', opts[i].getAttribute('data-theme-choice') === t ? 'true' : 'false');
+    }
+  }
+  function apply(t) {
+    setChecked(t);
+    if (t === 'random') { startGravity(); return; }
+    stopGravity();
+    if (t === 'auto') { root.removeAttribute('data-theme'); } else { root.setAttribute('data-theme', t); }
+  }
+  function setOpen(open) {
+    panel.hidden = !open;
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    btn.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+  }
+
+  var saved = 'auto';
+  try { var s = localStorage.getItem(KEY); if (s && valid.indexOf(s) > -1) saved = s; } catch (e) {}
+  apply(saved);
+
+  btn.addEventListener('click', function (e) { e.stopPropagation(); setOpen(panel.hidden); });
+  panel.addEventListener('click', function (e) { e.stopPropagation(); });
+  for (var i = 0; i < opts.length; i++) {
+    opts[i].addEventListener('click', function () {
+      var t = this.getAttribute('data-theme-choice');
+      apply(t);
+      if (t !== 'random') { try { localStorage.setItem(KEY, t); } catch (e) {} }
+    });
+  }
+  document.addEventListener('click', function () { if (!panel.hidden) setOpen(false); });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && !panel.hidden) { setOpen(false); btn.focus(); }
+  });
+})();
+</script>
+</body>
+</html>
