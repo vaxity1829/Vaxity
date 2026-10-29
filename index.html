@@ -111,10 +111,8 @@ h2 { margin: 0 0 10px; font-size: 0.8rem; font-weight: 600; letter-spacing: 0.1e
 
 ul { margin: 0; padding-left: 1.2em; }
 
-/* gravity mode: every page element becomes a falling body */
 .fall { position: fixed; left: 0; top: 0; margin: 0; z-index: 5; transform-origin: 50% 50%; will-change: transform; user-select: none; list-style-position: inside; }
 
-/* theme menu */
 .menu-btn {
   position: fixed;
   top: calc(env(safe-area-inset-top, 0px) + 12px);
@@ -210,7 +208,6 @@ ul { margin: 0; padding-left: 1.2em; }
   var panel = document.getElementById('theme-menu');
   var opts = panel.querySelectorAll('.opt');
 
-  /* ---------- gravity ("Random ahh") ---------- */
   var SEL = 'header img, h1, .sub, hr, h2, .bio, main li';
   var engine = null, raf = 0, last = 0, items = [], walls = null;
 
@@ -295,7 +292,6 @@ ul { margin: 0; padding-left: 1.2em; }
 
   window.addEventListener('resize', function () { if (engine && walls) { placeWalls(); } });
 
-  /* ---------- themes ---------- */
   function setChecked(t) {
     for (var i = 0; i < opts.length; i++) {
       opts[i].setAttribute('aria-checked', opts[i].getAttribute('data-theme-choice') === t ? 'true' : 'false');
